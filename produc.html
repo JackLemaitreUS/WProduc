@@ -1,0 +1,492 @@
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ordre de Réparation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #000000;
+        color: #333355;
+        margin: 0;
+        display: flex;
+        font-size: 11px;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 1200px;
+        background-color: #e5e5e5;
+        padding: 20px;
+        border-radius: 8px;
+      }
+
+      .form-section,
+      .result-section {
+        margin-bottom: 20px;
+        background-color: #e5e5e5;
+        padding: 15px;
+        border-radius: 8px;
+      }
+
+      .form-section {
+        display: inline-block;
+        vertical-align: top;
+        width: 45%;
+      }
+
+      #weekProd span {
+        margin-left: 80px;
+        color: #4caf50;
+        /* Green: Week*/
+      }
+
+      #monthProd span {
+        margin-left: 92px;
+        color: #ff9800;
+        /* Orange: Month */
+      }
+
+      #boosterProd span {
+        margin-left: 80px;
+        color: #f44336;
+        /* Rouge: Booster */
+      }
+
+      .result-section {
+        display: inline-block;
+        vertical-align: top;
+        width: 45%;
+      }
+
+      #list {
+        list-style-type: none;
+        padding: 0;
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        background-color: #d5d5d5;
+        color: #000000;
+      }
+
+      #list li {
+        padding: 5px;
+        background-color: #ffffff;
+        font-size: 11px;
+        margin-bottom: 5px;
+        border: 1px solid #ddd;
+        color: #1a3847;
+      }
+
+      .total-time {
+        font-weight: bold;
+        color: #000000;
+      }
+
+      button {
+        background-color: #fcde1b;
+        color: #000000;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        margin-left: 10px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background-color: #fbc316;
+      }
+
+      h1,
+      h2 {
+        text-align: center;
+        color: #000000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="passwordSection">
+      <label for="password">Mot de passe:</label>
+      <input type="password" id="passwordInput" />
+      <button onclick="checkPassword()">Valider</button>
+      <p id="errorMessage" style="color: red; display: none;">Mot de passe incorrect.</p>
+    </div>
+    <div id="mainContainer" class="container" style="display: none;">
+      <div id="header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <a href="#" onclick="document.getElementById('fileInput').click();">Charger</a>
+          <input type="file" id="fileInput" accept=".txt" style="display: none;" onchange="loadFromFile()" />
+        </div>
+        <h2 style="margin: 0;">Tableau de bord</h2>
+        <div>
+          <a href="#" onclick="saveToFile()">Sauvegarder</a>
+        </div>
+      </div>
+      <div class="form-section">
+        <form id="repairForm">
+          <label for="order">Ordre de réparation :</label>
+          <br />
+          <input type="text" id="order" name="order" required />
+          <br />
+          <br />
+          <label for="time">Temps (heures) :</label>
+          <br />
+          <input type="number" id="time" name="time" required />
+          <br />
+          <br />
+          <label for="carType">Marque: </label>
+          <br />
+          <select id="carType" name="carType" onchange="updateModelOptions(); toggleCarTypeInput();">
+            <option value="Renault">Renault</option>
+            <option value="Dacia">Dacia</option>
+            <option value="Citroen">Citroen</option>
+            <option value="Peugeot">Peugeot</option>
+            <option value="Toyota">Toyota</option>
+            <option value="Fiat">Fiat</option>
+            <option value="VW">VW</option>
+            <option value="Autre">Autre</option>
+          </select>
+          <div id="carModelContainer" style="margin-top: 10px;">
+            <label for="carModel">Modèle: </label>
+            <br />
+            <select id="carModel" name="carModel"></select>
+          </div>
+          <div id="otherCarContainer" style="display: none; margin-top:10px;">
+            <label for="otherCar">Autre: </label>
+            <input type="text" id="otherCar" placeholder="Entrez la marque et le modèle" />
+          </div>
+          <br />
+          <br />
+          <div id="colorOptions">
+            <label>Couleur :</label>
+            <br />
+            <div style="display:flex;margin-bottom:50px;">
+              <div style="flex: 1;">
+                <input type="checkbox" name="color" value="Rouge" /> Rouge <br />
+                <input type="checkbox" name="color" value="Bleu" /> Bleu <br />
+                <input type="checkbox" name="color" value="Blanc" /> Blanc <br />
+                <input type="checkbox" name="color" value="Noir" /> Noir <br />
+                <input type="checkbox" name="color" value="Orange" /> Orange <br />
+              </div>
+              <div style="flex: 1;">
+                <input type="checkbox" name="color" value="Violet" /> Violet <br />
+                <input type="checkbox" name="color" value="Jaune" /> Jaune <br />
+                <input type="checkbox" name="color" value="Vert" /> Vert <br />
+                <input type="checkbox" name="color" value="Rose" /> Rose <br />
+                <input type="checkbox" name="color" value="Marron" /> Marron <br />
+              </div>
+            </div>
+          </div>
+          <label for="repairType">Type de réparation :</label>
+          <br />
+          <select id="repairType" name="repairType" onchange="toggleOtherInput()">
+            <option value="Choc AV">Choc AV</option>
+            <option value="Choc AR">Choc AR</option>
+            <option value="Choc latéral G">Choc latéral G</option>
+            <option value="Choc latéral D">Choc latéral D</option>
+            <option value="Entrée d'eau">Entrée d'eau</option>
+            <option value="Leve-vitre">Leve-vitre</option>
+            <option value="Autre intervention">Autre intervention</option>
+          </select>
+          <div id="otherInputContainer" style="display: none; margin-top:10px;">
+            <label for="otherRepair">Autre: </label>
+            <input type="text" id="otherRepair" />
+          </div>
+          <br />
+          <br />
+          <button type="button" onclick="addEntry()">Ajouter</button>
+        </form>
+      </div>
+      <div class="result-section">
+        <h2>Liste des OR</h2>
+        <ul id="list"></ul>
+        <p class="total-time">Total des heures : <span id="totalHours">0h00</span>
+        </p>
+        <label id="weekProd">Prod(Semaine 35h): <span id="weekValue"> None</span>
+        </label>
+        <br>
+        <label id="monthProd">Prod(Mois 140h): <span id="monthValue"> None</span>
+        </label>
+        <br>
+        <label id="boosterProd">Booster(Mois 168h): <span id="boosterValue">None</span>
+        </label>
+      </div>
+    </div>
+    <script>
+      function checkPassword() {
+        const enteredPassword = document.getElementById('passwordInput').value;
+        const correctPassword = "979520";
+        if (enteredPassword === correctPassword) {
+          document.getElementById('passwordSection').style.display = 'none';
+          document.getElementById('mainContainer').style.display = 'block';
+        } else {
+          document.getElementById('errorMessage').style.display = 'block';
+        }
+      }
+
+      function toggleCarTypeInput() {
+        const carType = document.getElementById('carType').value;
+        const otherCarContainer = document.getElementById('otherCarContainer');
+        if (carType === 'Autre') {
+          otherCarContainer.style.display = 'block';
+        } else {
+          otherCarContainer.style.display = 'none';
+        }
+      }
+
+      function toggleOtherInput() {
+        const repairType = document.getElementById('repairType').value;
+        const otherInputContainer = document.getElementById('otherInputContainer');
+        if (repairType === 'Autre intervention') {
+          otherInputContainer.style.display = 'block';
+        } else {
+          otherInputContainer.style.display = 'none';
+        }
+      }
+      let totalHours = 0;
+      let orders = [];
+      let weeklyTarget = 35; // Par défaut, c'est 35h
+      function calculateTotal() {
+        const listItems = document.querySelectorAll('#list li');
+        let total = 0;
+        listItems.forEach(item => {
+          const parts = item.textContent.split(',');
+          const timePart = parts[1].trim(); // Format attendu : "Temps: Xh"
+          const centièmes = parseFloat(timePart.replace('Temps: ', '').replace('h', '').trim());
+          if (!isNaN(centièmes)) {
+            total += centièmes; // Additionner les heures
+          }
+        });
+        return total; // Retourne le total calculé
+      }
+
+      function updateTotalHoursDisplay() {
+        totalHours = calculateTotal(); // Met à jour totalHours en fonction des éléments de la liste
+        const hours = Math.floor(totalHours);
+        const minutes = Math.round((totalHours % 1) * 60);
+        document.getElementById('totalHours').textContent = `${hours}h${minutes < 10 ? '0' + minutes : minutes}`;
+
+        // Prod Semaine  
+        const missingHours = weeklyTarget - totalHours;
+        const missingHoursDisplay = Math.floor(missingHours);
+        const missingMinutesDisplay = Math.round((missingHours % 1) * 60);
+        const weekValueElement = document.getElementById('weekValue');
+        if (missingHours > 0) {
+          weekValueElement.textContent = `manque ${missingHoursDisplay}h ${missingMinutesDisplay}min /${weeklyTarget}h.`;
+        } else {
+          weekValueElement.textContent = `Objectif atteint: ${weeklyTarget}h par ${Math.abs(missingHoursDisplay)}h ${Math.abs(missingMinutesDisplay)}min.`;
+        }
+        // Prod Mois 
+        const monthlyTarget = 140;
+        const missingMonthHours = monthlyTarget - totalHours;
+        const missingHoursMonthDisplay = Math.floor(missingMonthHours);
+        const missingMinutesMonthDisplay = Math.round((missingMonthHours % 1) * 60);
+        const monthValueElement = document.getElementById('monthValue');
+        if (missingHours > 0) {
+          monthValueElement.textContent = `manque ${missingHoursMonthDisplay}h ${missingMinutesMonthDisplay}min /${monthlyTarget}h.`;
+        } else {
+          monthValueElement.textContent = `Objectif atteint: ${monthlyTarget}h par ${Math.abs(missingHoursMonthDisplay)}h ${Math.abs(missingMinutesMonthDisplay)}min.`;
+        }
+        // Prod Booster
+        const boosterTarget = 168;
+        const missingHoursBooster = boosterTarget - totalHours;
+        const missingHoursBoosterDisplay = Math.floor(missingHoursBooster);
+        const missingMinutesBoosterDisplay = Math.round((missingHours % 1) * 60);
+        const boosterValueElement = document.getElementById('boosterValue');
+        if (missingHoursBooster > 0) {
+          boosterValueElement.textContent = `manque ${missingHoursBoosterDisplay}h ${missingMinutesBoosterDisplay}min  /${boosterTarget}h.`;
+        } else {
+          boosterValueElement.textContent = `Booster : Objectif atteint: ${boosterTarget}h par ${Math.abs(missingHoursBoosterDisplay)}h ${Math.abs(missingMinutesBoosterDisplay)}min.`;
+        }
+      }
+
+      function addEntry() {
+        const order = document.getElementById('order').value;
+        const time = parseFloat(document.getElementById('time').value); 
+        const carType = document.getElementById('carType').value;
+        const carModel = document.getElementById('carModel').value;
+        const otherCar = document.getElementById('otherCar').value;
+        const repairType = document.getElementById('repairType').value;
+        const otherRepair = document.getElementById('otherRepair').value;
+        const colorElements = document.getElementsByName('color');
+        const selectedColors = [];
+        for (const colorElement of colorElements) {
+          if (colorElement.checked) {
+            selectedColors.push(colorElement.value);
+          }
+        }
+        if (!order || isNaN(time) || (!carType && !otherCar) || !repairType) {
+          alert("Veuillez remplir tous les champs obligatoires.");
+          return;
+        }
+
+        orders.push({
+          order,
+          time,
+          carType,
+          carModel,
+          otherCar,
+          repairType,
+          otherRepair,
+          selectedColors
+        });
+        const listItem = document.createElement('li');
+        // Si "Autre intervention", n'ajoute que l'input
+        if (repairType === 'Autre intervention' && otherRepair) {
+          listItem.textContent = `OR: ${order}, Temps: ${time}h, ${carType}${otherCar} ${carModel} ${selectedColors.join(', ')}, ${otherRepair}`;
+        } else {
+          listItem.textContent = `OR: ${order}, Temps: ${time}h, ${carType}${otherCar} ${carModel} ${selectedColors.join(', ')}, ${repairType}${otherRepair ? ' (' + otherRepair + ')' : ''}`;
+        }
+        document.getElementById('list').appendChild(listItem);
+        totalHours += time;
+        updateTotalHoursDisplay(); 
+        resetForm(); // Réinitialise le formulaire
+      }
+
+      function resetForm() {
+        document.getElementById('repairForm').reset();
+        document.getElementById('otherCarContainer').style.display = 'none';
+        document.getElementById('otherInputContainer').style.display = 'none';
+        updateModelOptions();
+      }
+
+      function updateModelOptions() {
+        const carType = document.getElementById('carType').value;
+        const carModel = document.getElementById('carModel');
+        carModel.innerHTML = ''; 
+        const models = {
+          'Dacia': ['Duster 1', 'Duster 2', 'Duster 3', 'Jogger', 'Logan', 'Logan Break', 'Sandero 1', 'Sandero 2', 'Sandero Stepway', 'Spring1', 'Spring2'],
+          'Renault': ['Arkana', 'Austral', 'Captur', 'Captur 2', 'Clio2', 'Clio3', 'Clio4', 'Clio5', 'Espace 3', 'Espace 4', 'Espace 5', 'Fluence', 'Kangoo1', 'Kangoo2', 'Kangoo 3', 'Kangoo 4', 'Megane', 'Master', 'Modus', 'R5', 'Scenic 3', 'Scenic 4', 'Scenic E-tech', 'Talisman', 'Trafic', 'Trafic 2', 'Twingo1', 'Twingo2', 'Twingo3', 'Twizzy', 'Zoe1', 'Zoe 2'],
+          'Citroen': ['Ami', 'Berlingo', 'C3', 'C4', 'C5', 'SpaceTourer'],
+          'Fiat': ['500', '600', 'Doblo', 'Panda', 'Punto', '500', 'Ducato'],
+          'Peugeot': ['208', '2008', '308', '3008', '508', '5008'],
+          'Toyota': ['Aygo', 'C-HR', 'Corolla', 'Hilux', 'Prius', 'RAV4', 'Yaris'],
+          'VW': ['Arteon', 'Golf', 'ID3', 'ID4', 'Jetta', 'Multivan', 'Passat', 'Polo', 'Taos', 'Tiguan', 'T-ROC']
+        };
+        const selectedModels = models[carType] || [];
+        selectedModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model;
+          option.textContent = model;
+          carModel.appendChild(option);
+        });
+      }
+
+      function saveToFile() {
+        const filename = suggestFileName() + ".txt"; 
+        const list = document.getElementById('list');
+        const lines = [];
+        for (const listItem of list.children) {
+          const text = listItem.textContent;
+          const timeElement = listItem.querySelector('.time-input'); // Vérifie la présence de l'input pour le temps
+          const timeValue = timeElement ? timeElement.value.trim() : ''; 
+          // N'ajoute que si timeValue n'est pas vide
+          if (timeValue) {
+            lines.push(`${text} | Temps: ${timeValue}h`); // Format avec centièmes d'heure
+          } else {
+            lines.push(text); 
+          }
+        }
+        const blob = new Blob([lines.join('\n')], {
+          type: 'text/plain'
+        });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+
+        document.getElementById('mainContainer').style.display = 'none';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('passwordSection').style.display = 'block';
+      }
+
+      function suggestFileName() {
+        const date = new Date();
+        const options = {
+          month: 'long'
+        };
+        const currentMonth = date.toLocaleDateString('fr-FR', options); // Mois actuel en français
+        return `OR_${currentMonth}`;
+      }
+
+      function loadFromFile() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const content = e.target.result;
+          const lines = content.split('\n');
+          const list = document.getElementById('list');
+          list.innerHTML = ''; 
+          let totalMinutes = 0; 
+          lines.forEach(line => {
+            if (line.trim()) {
+              const listItem = document.createElement('li');
+              listItem.textContent = line.trim(); // Ajoute tout le texte dans l'élément de liste
+              list.appendChild(listItem);
+              // Rechercher "Temps:" et capturer le temps en décimal
+              const timeMatch = line.match(/Temps:\s*(\d+(\.\d+)?)h/);
+              if (timeMatch) {
+                const decimalHours = parseFloat(timeMatch[1]);
+                const hours = Math.floor(decimalHours);
+                const minutes = Math.round((decimalHours - hours) * 60);
+                totalMinutes += (hours * 60) + minutes; // Convertir en minutes et ajouter au total
+              } else {
+                console.error(`Format de temps non détecté dans : "${line}"`);
+              }
+            }
+          });
+          // Convertir totalMinutes en heures et minutes
+          const totalHours = Math.floor(totalMinutes / 60);
+          const remainingMinutes = totalMinutes % 60;
+          // Mettre à jour l'affichage des heures totales
+          document.getElementById('totalHours').textContent = `${totalHours}h ${remainingMinutes}min`;
+          // Calcul de la prod Semaine (quota de 35h)
+          const weekValueElement = document.getElementById('weekValue');
+          const weeklyQuota = 35 * 60; // 35 heures en minutes
+          if (totalMinutes > weeklyQuota) {
+            const overTime = totalMinutes - weeklyQuota;
+            const overTimeHours = Math.floor(overTime / 60);
+            const overTimeMinutes = overTime % 60;
+            weekValueElement.textContent = `Prod(Semaine): Objectif atteint`;
+          } else {
+            const remainingMinutes = weeklyQuota - totalMinutes;
+            const remainingHours = Math.floor(remainingMinutes / 60);
+            const remainingMin = remainingMinutes % 60;
+            weekValueElement.textContent = `manque ${remainingHours}h ${remainingMin}min /35h`;
+          }
+          // Calcul de la prod Mois (quota de 140h)
+          const monthValueElement = document.getElementById('monthValue');
+          const monthlyQuota = 140 * 60; // 140 heures en minutes
+          if (totalMinutes > monthlyQuota) {
+            monthValueElement.textContent = `Prod(Mois): Objectif atteint.`;
+          } else {
+            const remainingMonthlyMinutes = monthlyQuota - totalMinutes;
+            const remainingMonthlyHours = Math.floor(remainingMonthlyMinutes / 60);
+            const remainingMonthlyMin = remainingMonthlyMinutes % 60;
+            monthValueElement.textContent = `manque ${remainingMonthlyHours}h ${remainingMonthlyMin}min /140h`;
+          }
+          // Calcul de la prod Booster (quota de 168h)
+          const boosterValueElement = document.getElementById('boosterValue');
+          const boosterQuota = 168 * 60; // 168 heures en minutes
+          if (totalMinutes >= boosterQuota) {
+            boosterValueElement.textContent = `Booster: Objectif atteint.`;
+          } else {
+            const remainingBoosterMinutes = boosterQuota - totalMinutes;
+            const remainingBoosterHours = Math.floor(remainingBoosterMinutes / 60);
+            const remainingBoosterMin = remainingBoosterMinutes % 60;
+            boosterValueElement.textContent = `manque ${remainingBoosterHours}h ${remainingBoosterMin}min /168h`;
+          }
+        };
+        reader.readAsText(file);
+      }
+      document.addEventListener("DOMContentLoaded", function() {
+        updateModelOptions(); 
+      });
+    </script>
+  </body>
+</html>
